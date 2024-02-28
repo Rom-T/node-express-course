@@ -24,8 +24,8 @@ const getBody = (req, callback) => {
 let name = "Enter your name.";
 let backgroundColor = "#ffffff";
 let prevName = "Enter your name.";
-let name2 = "";
-let prevName2 = "";
+let nameParagraphColor = "";
+let prevNameTemp = "";
 
 // here, you can change the form below to modify the input fields and what is displayed.
 // This is just ordinary html with string interpolation.
@@ -37,7 +37,7 @@ const form = () => {
   <input name="name"></input>
   <button type="submit">Submit</button>
   <div>
-  <p>${name2}What color do you want to see as a background?</p>
+  <p>${nameParagraphColor}What color do you want to see as a background?</p>
   <select name="color" onchange="this.form.submit();">
   <option value="">Select Color</option>
   <option style="color:#ff0000;" value="#ff0000">&#9724; Red</option>
@@ -63,16 +63,16 @@ const server = http.createServer((req, res) => {
       if (body["name"]) {
         name = `Hello ${body["name"]}! `;
         prevName = name;
-        name2 = name;
-        prevName2 = name;
+        nameParagraphColor = name;
+        prevNameTemp = name;
       } else {
         name = "Nothing was entered.";
-        name2 = '';
+        nameParagraphColor = '';
       }
       if (body["color"] && body["name"] == "") {
         backgroundColor = body["color"].replace('%23', '#');
         name = prevName;
-        name2 = prevName2;
+        nameParagraphColor = prevNameTemp;
       }
       // Your code changes would end here
       res.writeHead(303, {
