@@ -21,17 +21,33 @@ const getBody = (req, callback) => {
 };
 
 // here, you could declare one or more variables to store what comes back from the form.
-let item = "Enter something below.";
+let name = "Enter your name.";
+let backgroundColor = "#ffffff";
+let prevName = "Enter your name.";
+let nameParagraphColor = "";
+let prevNameTemp = "";
 
 // here, you can change the form below to modify the input fields and what is displayed.
 // This is just ordinary html with string interpolation.
 const form = () => {
   return `
-  <body>
-  <p>${item}</p>
+  <body style="background-color: ${backgroundColor};">
+  <p>${name}</p>
   <form method="POST">
-  <input name="item"></input>
+  <input name="name"></input>
   <button type="submit">Submit</button>
+  <div>
+  <p>${nameParagraphColor}What color do you want to see as a background?</p>
+  <select name="color" onchange="this.form.submit();">
+  <option value="">Select Color</option>
+  <option style="color:#ff0000;" value="#ff0000">&#9724; Red</option>
+  <option style="color:#ffff00;" value="#ffff00">&#9724; Yellow</option>
+  <option style="color:#0000ff;" value="#0000ff">&#9724; Blue</option>
+  <option style="color:#00ff00;" value="#00ff00">&#9724; Green</option>
+  <option style="color:#ffc0cb;" value="#ffc0cb">&#9724; Pink</option>
+  <option style="color:#a020f0;" value="#a020f0">&#9724; Purple</option>
+  </select>
+  </div>
   </form>
   </body>
   `;
@@ -44,10 +60,19 @@ const server = http.createServer((req, res) => {
     getBody(req, (body) => {
       console.log("The body of the post is ", body);
       // here, you can add your own logic
-      if (body["item"]) {
-        item = body["item"];
+      if (body["name"]) {
+        name = `Hello ${body["name"]}! `;
+        prevName = name;
+        nameParagraphColor = name;
+        prevNameTemp = name;
       } else {
-        item = "Nothing was entered.";
+        name = "Nothing was entered.";
+        nameParagraphColor = '';
+      }
+      if (body["color"] && body["name"] == "") {
+        backgroundColor = body["color"].replace('%23', '#');
+        name = prevName;
+        nameParagraphColor = prevNameTemp;
       }
       // Your code changes would end here
       res.writeHead(303, {
