@@ -1,54 +1,59 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
+const peopleRouter = require('./routes/people');
 const app = express();
-const { products } = require('./data');
 
-app.use(express.static('./public'));
+const logger = (req, res, next) => {
+  const method = req.method;
+  const url = req.url;
+  const time = new Date().toLocaleTimeString();
+  console.log(method, url, time);
+  next();
+};
 
-app.get('/api/v1/test', (req, res) => {
-  res.json({ message: 'It worked!' });
+const auth = (req, res, next) => {
+  if (!req.cookies.name) {
+    return res
+      .status(401)
+      .json({ success: false, message: 'Unauthorized' });
+  }
+  req.user = req.cookies.name;
+  next();
+};
+
+app.use(express.static('./methods-public'));
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+app.use(logger);
+app.use(cookieParser());
+
+app.get('/', (req, res) => {
+  res.send('Home');
 });
 
-app.get('/api/v1/products', (req, res) => {
-  res.json(products);
+app.use('/api/people', peopleRouter);
+
+app.post("/logon", (req, res) => {
+  const { name } = req.body;
+  if (!name) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Please provide a name" });
+  }
+  res.cookie("name", name);
+  res.status(201).json({ success: true, message: `Hello ${name}!` });
 });
 
-app.get('/api/v1/products/:productID', (req, res) => {
-  const idToFind = parseInt(req.params.productID);
-  const product = products.find(p => p.id === idToFind);
-
-  if (!product) {
-    return res.status(404).json({ message: 'That product was not found' });
-  }
-
-  return res.json(product);
+app.delete("/logoff", (req, res) => {
+  res.clearCookie("name");
+  res.status(200).json({ success: true, message: "The user is logged off" });
 });
 
-app.get('/api/v1/query', (req, res) => {
-  const { search, limit, priceLimit } = req.query;
-  let foundProducts = [...products];
-
-  if (search) {
-    foundProducts = foundProducts.filter(product => product.name.startsWith(search));
-  }
-
-  if (limit) {
-    foundProducts = foundProducts.slice(0, parseInt(limit));
-  }
-
-  if (priceLimit) {
-    foundProducts = foundProducts.filter(product => product.price <= parseInt(priceLimit));
-  }
-
-  if (foundProducts.length < 1) {
-    return res.status(200).json({ sucess: true, data: [] });
-  }
-  res.status(200).json(foundProducts);
-});
-
-app.all('*', (req, res) => {
-  res.status(404).send('Not Found');
+app.get("/test", auth, (req, res) => {
+  const { user } = req;
+  res.status(200).json({ success: true, message: `Welcome ${user}` });
 });
 
 app.listen(3000, () => {
-  console.log('Server is listening on port 3000....');
+  console.log('Server listening on port 3000');
 });
