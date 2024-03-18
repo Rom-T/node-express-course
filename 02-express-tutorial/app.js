@@ -25,28 +25,24 @@ app.get('/api/v1/products/:productID', (req, res) => {
 
 app.get('/api/v1/query', (req, res) => {
   const { search, limit, priceLimit } = req.query;
-  let foundedProducts = [...products];
+  let foundProducts = [...products];
 
   if (search) {
-    foundedProducts = foundedProducts.filter(product => {
-      return product.name.startsWith(search);
-    });
+    foundProducts = foundProducts.filter(product => product.name.startsWith(search));
   }
 
   if (limit) {
-    foundedProducts = foundedProducts.slice(0, parseInt(limit));
+    foundProducts = foundProducts.slice(0, parseInt(limit));
   }
 
   if (priceLimit) {
-    foundedProducts = foundedProducts.filter(product => {
-      return product.price <= parseInt(priceLimit);
-    });
+    foundProducts = foundProducts.filter(product => product.price <= parseInt(priceLimit));
   }
 
-  if (foundedProducts.length < 1) {
+  if (foundProducts.length < 1) {
     return res.status(200).json({ sucess: true, data: [] });
   }
-  res.status(200).json(foundedProducts);
+  res.status(200).json(foundProducts);
 });
 
 app.all('*', (req, res) => {
